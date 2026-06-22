@@ -3,7 +3,9 @@
 namespace App\Listeners;
 
 use App\Events\OrderCreated;
+use App\Jobs\ProcessOrder;
 use App\Jobs\SendOrderConfirmationEmail;
+use App\Jobs\UpdateStockAfterOrder;
 use Illuminate\Support\Facades\Log;
 
 class SendOrderNotification
@@ -16,7 +18,13 @@ class SendOrderNotification
             'total' => $event->order->total,
         ]);
 
-        // Enviar para fila para enviar email em background
+        // Atualizar estoque do pedido em background
+        UpdateStockAfterOrder::dispatch($event->order);
+
+        // Processar pedido em background
+        ProcessOrder::dispatch($event->order);
+
+        // Enviar email de confirmação em background
         SendOrderConfirmationEmail::dispatch($event->order);
     }
 }
