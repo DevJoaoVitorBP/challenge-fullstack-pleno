@@ -434,6 +434,48 @@ LOG_LEVEL=debug
 - **Em desenvolvimento:** Processe com `php artisan queue:work`
 - **Em produção:** Use Redis ou Beanstalkd
 
+### Jobs (Processamento em Background)
+
+**Jobs Implementados:**
+
+1. **UpdateStockAfterOrder** 
+   - Disparado quando um pedido é criado
+   - Atualiza estoque de todos os itens do pedido
+   - Cria registros de `StockMovement` para auditoria
+   - Verifica se estoque fica abaixo do mínimo e dispara evento `StockLow`
+   - Usa transações para garantir integridade
+   - Falha se estoque insuficiente (rollback automático)
+
+2. **ProcessOrder**
+   - Disparado quando um pedido é criado (async)
+   - Valida informações de pagamento (mockado)
+   - Integração com gateway de pagamento (placeholder)
+   - Confirma estoque e prepara envio
+   - Log estruturado de sucesso/erro
+
+3. **SendOrderConfirmationEmail**
+   - Disparado após criar pedido
+   - Envia email de confirmação para o cliente
+   - Pode ser integrado com Mailable Laravel
+   - Log de sucesso/erro da entrega
+
+**Listener de Eventos:**
+- `SendOrderNotification` - Dispara os 3 jobs quando evento `OrderCreated` é acionado
+- Execução em background para não bloquear resposta HTTP
+
+**Como testar Jobs localmente:**
+```bash
+# Terminal 1: Inicie a fila
+php artisan queue:work database
+
+# Terminal 2: Crie um pedido via API
+curl -X POST http://localhost:8000/api/v1/orders \
+  -H "Authorization: Bearer {token}" \
+  -d "..."
+
+# Os 3 jobs serão processados automaticamente no Terminal 1
+```
+
 ### Logging
 - **Formato:** JSON estruturado
 - **Nível:** DEBUG (desenvolvimento), ERROR (produção)
