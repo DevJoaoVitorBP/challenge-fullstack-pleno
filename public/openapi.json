@@ -1,0 +1,422 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "E-Commerce API",
+    "version": "1.0.0",
+    "description": "API RESTful completa para e-commerce com autenticação Sanctum"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api/v1",
+      "description": "Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Registrar novo usuário",
+        "description": "Cria um novo usuário e retorna um token de autenticação",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "password_confirmation"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "email": {"type": "string", "format": "email"},
+                  "password": {"type": "string", "format": "password"},
+                  "password_confirmation": {"type": "string", "format": "password"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Usuário registrado com sucesso"},
+          "422": {"description": "Validação falhou"}
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Fazer login",
+        "description": "Autentica um usuário e retorna um token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {"type": "string", "format": "email"},
+                  "password": {"type": "string", "format": "password"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Login realizado com sucesso"},
+          "401": {"description": "Credenciais inválidas"}
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Fazer logout",
+        "description": "Invalida o token de autenticação do usuário",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Logout realizado com sucesso"},
+          "401": {"description": "Não autenticado"}
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Autenticação"],
+        "summary": "Obter dados do usuário autenticado",
+        "description": "Retorna os dados do usuário atualmente autenticado",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Dados do usuário obtidos com sucesso"},
+          "401": {"description": "Não autenticado"}
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "tags": ["Produtos"],
+        "summary": "Listar produtos",
+        "description": "Retorna uma lista paginada de produtos com suporte a filtros",
+        "parameters": [
+          {"name": "category_id", "in": "query", "schema": {"type": "integer"}},
+          {"name": "search", "in": "query", "schema": {"type": "string"}},
+          {"name": "min_price", "in": "query", "schema": {"type": "number"}},
+          {"name": "max_price", "in": "query", "schema": {"type": "number"}},
+          {"name": "sort", "in": "query", "schema": {"type": "string"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 15}}
+        ],
+        "responses": {
+          "200": {"description": "Produtos listados com sucesso"}
+        }
+      },
+      "post": {
+        "tags": ["Produtos"],
+        "summary": "Criar novo produto",
+        "description": "Cria um novo produto (apenas admin)",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "slug": {"type": "string"},
+                  "description": {"type": "string"},
+                  "price": {"type": "number"},
+                  "cost_price": {"type": "number"},
+                  "quantity": {"type": "integer"},
+                  "min_quantity": {"type": "integer"},
+                  "active": {"type": "boolean"},
+                  "category_id": {"type": "integer"},
+                  "tags": {"type": "array", "items": {"type": "integer"}}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Produto criado com sucesso"},
+          "403": {"description": "Sem permissão (apenas admin)"}
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "tags": ["Produtos"],
+        "summary": "Obter detalhes de um produto",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Produto obtido com sucesso"},
+          "404": {"description": "Produto não encontrado"}
+        }
+      },
+      "put": {
+        "tags": ["Produtos"],
+        "summary": "Atualizar um produto",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {
+          "200": {"description": "Produto atualizado com sucesso"},
+          "403": {"description": "Sem permissão"},
+          "404": {"description": "Produto não encontrado"}
+        }
+      },
+      "delete": {
+        "tags": ["Produtos"],
+        "summary": "Deletar um produto",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Produto deletado com sucesso"},
+          "403": {"description": "Sem permissão"},
+          "404": {"description": "Produto não encontrado"}
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categorias"],
+        "summary": "Listar categorias",
+        "description": "Retorna a hierarquia completa de categorias",
+        "responses": {"200": {"description": "Categorias listadas com sucesso"}}
+      },
+      "post": {
+        "tags": ["Categorias"],
+        "summary": "Criar nova categoria",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "slug": {"type": "string"},
+                  "description": {"type": "string"},
+                  "parent_id": {"type": "integer"},
+                  "active": {"type": "boolean"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Categoria criada com sucesso"},
+          "403": {"description": "Sem permissão"}
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": ["Categorias"],
+        "summary": "Obter detalhes de uma categoria",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Categoria obtida com sucesso"},
+          "404": {"description": "Categoria não encontrada"}
+        }
+      },
+      "put": {
+        "tags": ["Categorias"],
+        "summary": "Atualizar categoria",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+        "responses": {
+          "200": {"description": "Categoria atualizada com sucesso"},
+          "403": {"description": "Sem permissão"},
+          "404": {"description": "Categoria não encontrada"}
+        }
+      },
+      "delete": {
+        "tags": ["Categorias"],
+        "summary": "Deletar categoria",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Categoria deletada com sucesso"},
+          "403": {"description": "Sem permissão"},
+          "404": {"description": "Categoria não encontrada"}
+        }
+      }
+    },
+    "/categories/{id}/products": {
+      "get": {
+        "tags": ["Categorias"],
+        "summary": "Listar produtos de uma categoria",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Produtos listados com sucesso"},
+          "404": {"description": "Categoria não encontrada"}
+        }
+      }
+    },
+    "/cart": {
+      "get": {
+        "tags": ["Carrinho"],
+        "summary": "Obter carrinho do usuário",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Carrinho obtido com sucesso"},
+          "401": {"description": "Não autenticado"}
+        }
+      },
+      "delete": {
+        "tags": ["Carrinho"],
+        "summary": "Limpar carrinho",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Carrinho esvaziado com sucesso"}}
+      }
+    },
+    "/cart/items": {
+      "post": {
+        "tags": ["Carrinho"],
+        "summary": "Adicionar item ao carrinho",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "quantity"],
+                "properties": {
+                  "product_id": {"type": "integer"},
+                  "quantity": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Item adicionado ao carrinho com sucesso"},
+          "400": {"description": "Erro ao adicionar item"}
+        }
+      }
+    },
+    "/cart/items/{itemId}": {
+      "put": {
+        "tags": ["Carrinho"],
+        "summary": "Atualizar quantidade do item",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "itemId", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {"quantity": {"type": "integer"}}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Item atualizado com sucesso"},
+          "400": {"description": "Erro ao atualizar item"}
+        }
+      },
+      "delete": {
+        "tags": ["Carrinho"],
+        "summary": "Remover item do carrinho",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "itemId", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Item removido com sucesso"},
+          "400": {"description": "Erro ao remover item"}
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["Pedidos"],
+        "summary": "Listar pedidos do usuário",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Pedidos listados com sucesso"},
+          "401": {"description": "Não autenticado"}
+        }
+      },
+      "post": {
+        "tags": ["Pedidos"],
+        "summary": "Criar novo pedido",
+        "description": "Cria um pedido a partir dos itens do carrinho",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["shipping_address", "billing_address"],
+                "properties": {
+                  "shipping_address": {"type": "object"},
+                  "billing_address": {"type": "object"},
+                  "notes": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Pedido criado com sucesso"},
+          "400": {"description": "Erro ao criar pedido"}
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": ["Pedidos"],
+        "summary": "Obter detalhes de um pedido",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "responses": {
+          "200": {"description": "Pedido obtido com sucesso"},
+          "403": {"description": "Sem permissão"},
+          "404": {"description": "Pedido não encontrado"}
+        }
+      }
+    },
+    "/orders/{id}/status": {
+      "put": {
+        "tags": ["Pedidos"],
+        "summary": "Atualizar status do pedido",
+        "description": "Atualiza o status de um pedido (apenas admin)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Status atualizado com sucesso"},
+          "403": {"description": "Sem permissão"},
+          "404": {"description": "Pedido não encontrado"}
+        }
+      }
+    }
+  }
+}
