@@ -73,7 +73,7 @@ class OrderControllerTest extends TestCase
 
         // Adicionando um item ao carrinho do usuário
         $cart = Cart::factory()->create(['user_id' => $this->user->id]);
-        
+
         $cart->items()->create([
             'product_id' => $this->product->id,
             'quantity' => 2,
