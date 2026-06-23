@@ -8,7 +8,7 @@ class CategoryRepository extends BaseRepository
 {
     public function __construct()
     {
-        $this->model = new Category();
+        $this->model = new Category;
     }
 
     public function getActive()
@@ -25,11 +25,12 @@ class CategoryRepository extends BaseRepository
             ->get();
     }
 
-    public function getByParent(int $parentId = null)
+    public function getByParent(?int $parentId = null)
     {
         if ($parentId === null) {
             return $this->model->whereNull('parent_id')->get();
         }
+
         return $this->model->where('parent_id', $parentId)->get();
     }
 

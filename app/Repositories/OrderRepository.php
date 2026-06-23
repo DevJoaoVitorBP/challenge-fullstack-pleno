@@ -8,7 +8,7 @@ class OrderRepository extends BaseRepository
 {
     public function __construct()
     {
-        $this->model = new Order();
+        $this->model = new Order;
     }
 
     public function getByUser(int $userId)

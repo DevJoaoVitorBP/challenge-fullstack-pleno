@@ -3,7 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Cart;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Cart>
@@ -18,8 +20,8 @@ class CartFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => \App\Models\User::factory(),
-            'session_id' => \Illuminate\Support\Str::uuid(),
+            'user_id' => User::factory(),
+            'session_id' => Str::uuid(),
         ];
     }
 }

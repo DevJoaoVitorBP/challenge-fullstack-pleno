@@ -3,11 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ProcessOrder implements ShouldQueue
 {
@@ -83,7 +83,7 @@ class ProcessOrder implements ShouldQueue
     private function validatePaymentInfo(): void
     {
         // Validar que o pedido tem usuário
-        if (!$this->order->user) {
+        if (! $this->order->user) {
             throw new \Exception('Pedido sem usuário associado');
         }
 
@@ -109,7 +109,7 @@ class ProcessOrder implements ShouldQueue
     private function processPaymentWithGateway(): void
     {
         // Simular processamento com gateway de pagamento
-        $gatewayTransactionId = 'TXN-' . strtoupper(substr(uniqid(), -12));
+        $gatewayTransactionId = 'TXN-'.strtoupper(substr(uniqid(), -12));
         $processingTime = rand(500, 2000); // Simular tempo de processamento
 
         Log::info('Processando pagamento com gateway simulado', [
@@ -139,7 +139,7 @@ class ProcessOrder implements ShouldQueue
         foreach ($this->order->items() as $item) {
             $product = $item->product;
 
-            if (!$product) {
+            if (! $product) {
                 throw new \Exception("Produto não encontrado para item #{$item->id}");
             }
 
@@ -160,7 +160,7 @@ class ProcessOrder implements ShouldQueue
      */
     private function generateInvoiceNumber(): string
     {
-        return 'INV-' . str_pad($this->order->id, 6, '0', STR_PAD_LEFT) . '-' . date('Ym');
+        return 'INV-'.str_pad($this->order->id, 6, '0', STR_PAD_LEFT).'-'.date('Ym');
     }
 
     /**
@@ -168,6 +168,6 @@ class ProcessOrder implements ShouldQueue
      */
     private function generateTrackingNumber(): string
     {
-        return 'TRK-' . strtoupper(substr(uniqid(), -8)) . '-' . date('Y');
+        return 'TRK-'.strtoupper(substr(uniqid(), -8)).'-'.date('Y');
     }
 }

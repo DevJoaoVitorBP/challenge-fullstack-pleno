@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,7 @@ class ProductControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $admin;
 
     protected function setUp(): void
@@ -80,7 +82,7 @@ class ProductControllerTest extends TestCase
 
     public function test_admin_can_create_product(): void
     {
-        $category = \App\Models\Category::factory()->create();
+        $category = Category::factory()->create();
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/products', [
             'name' => 'Test Product',

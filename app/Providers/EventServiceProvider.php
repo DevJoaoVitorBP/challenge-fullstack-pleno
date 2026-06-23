@@ -8,7 +8,6 @@ use App\Events\StockLow;
 use App\Listeners\LogProductCreation;
 use App\Listeners\NotifyAdminLowStock;
 use App\Listeners\SendOrderNotification;
-use Illuminate\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider

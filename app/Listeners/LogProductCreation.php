@@ -3,8 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\ProductCreated;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class LogProductCreation
 {

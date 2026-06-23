@@ -23,12 +23,12 @@ return new class extends Migration
             $table->json('billing_address');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->onDelete('restrict');
-            
+
             $table->index('user_id');
             $table->index('status');
             $table->index('created_at');

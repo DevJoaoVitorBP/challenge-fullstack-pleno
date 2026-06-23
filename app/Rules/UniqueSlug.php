@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class UniqueSlug implements ValidationRule
 {
     private string $table;
+
     private ?int $ignoreId;
 
     public function __construct(string $table, ?int $ignoreId = null)
@@ -27,7 +28,7 @@ class UniqueSlug implements ValidationRule
         }
 
         if ($query->exists()) {
-            $fail('O slug "' . $value . '" já existe. Deve ser único.');
+            $fail('O slug "'.$value.'" já existe. Deve ser único.');
         }
     }
 }

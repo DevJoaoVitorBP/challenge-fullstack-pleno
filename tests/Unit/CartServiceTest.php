@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\CartService;
@@ -14,14 +13,16 @@ class CartServiceTest extends TestCase
     use RefreshDatabase;
 
     protected CartService $service;
+
     protected User $user;
+
     protected Product $product;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->service = new CartService();
+        $this->service = new CartService;
         $this->user = User::factory()->create();
         $this->product = Product::factory()->create(['quantity' => 100]);
     }

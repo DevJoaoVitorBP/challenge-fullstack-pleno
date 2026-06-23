@@ -20,7 +20,7 @@ class SendOrderConfirmationEmail implements ShouldQueue
     public function handle(): void
     {
         try {
-            if (!$this->order->user || !$this->order->user->email) {
+            if (! $this->order->user || ! $this->order->user->email) {
                 throw new \Exception('Usuário ou email não encontrado para o pedido');
             }
 

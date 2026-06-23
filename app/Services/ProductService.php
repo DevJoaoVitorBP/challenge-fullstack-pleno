@@ -11,13 +11,16 @@ use Illuminate\Support\Str;
 class ProductService
 {
     protected ProductRepository $repository;
+
     protected const CACHE_TTL = 3600; // 1 hora = 3600 segundos
+
     protected const CACHE_TAG = 'products';
+
     protected const CATEGORY_CACHE_TAG = 'category_products';
 
     public function __construct()
     {
-        $this->repository = new ProductRepository();
+        $this->repository = new ProductRepository;
     }
 
     public function getAllProducts(array $filters = [])
@@ -29,7 +32,7 @@ class ProductService
     public function getProductById(int $id)
     {
         $cacheKey = "product.{$id}";
-        
+
         return Cache::tags([self::CACHE_TAG])
             ->remember($cacheKey, self::CACHE_TTL, function () use ($id) {
                 return $this->repository->find($id);
@@ -42,7 +45,7 @@ class ProductService
         $data['slug'] = Str::slug($data['name']);
 
         $product = $this->repository->create($data);
-        
+
         if ($product && $dto->tags) {
             $product->tags()->attach($dto->tags);
         }
@@ -69,23 +72,24 @@ class ProductService
 
         // Invalidar cache do produto e categorias relacionadas
         Cache::tags([self::CACHE_TAG, self::CATEGORY_CACHE_TAG])->flush();
-        
+
         return $product ? ProductDTO::fromArray($product->toArray()) : null;
     }
 
     public function deleteProduct(int $id): bool
     {
         $product = $this->repository->delete($id);
-        
+
         // Invalidar cache ao deletar
         Cache::tags([self::CACHE_TAG, self::CATEGORY_CACHE_TAG])->flush();
-        
+
         return $product !== null;
     }
 
     public function checkStockAvailability(int $productId, int $quantity): bool
     {
         $product = $this->repository->find($productId);
+
         return $product && $product->quantity >= $quantity;
     }
 
@@ -102,7 +106,7 @@ class ProductService
     public function getProductsByCategory(int $categoryId)
     {
         $cacheKey = "products.category.{$categoryId}";
-        
+
         return Cache::tags([self::CATEGORY_CACHE_TAG, "category.{$categoryId}"])
             ->remember($cacheKey, self::CACHE_TTL, function () use ($categoryId) {
                 return $this->repository->getByCategory($categoryId);

@@ -10,7 +10,7 @@ class ValidCategory implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!Category::where('id', $value)->exists()) {
+        if (! Category::where('id', $value)->exists()) {
             $fail('A categoria selecionada não existe.');
         }
     }

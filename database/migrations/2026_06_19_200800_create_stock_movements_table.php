@@ -20,12 +20,12 @@ return new class extends Migration
             $table->string('reference_type')->nullable();
             $table->unsignedBigInteger('reference_id')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('product_id')
                 ->references('id')
                 ->on('products')
                 ->onDelete('cascade');
-            
+
             $table->index('product_id');
             $table->index('type');
             $table->index('created_at');

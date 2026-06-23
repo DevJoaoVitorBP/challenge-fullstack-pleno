@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\DTOs\CartItemDTO;
 use App\Models\CartItem;
 use App\Repositories\CartRepository;
 use App\Repositories\ProductRepository;
@@ -10,12 +9,13 @@ use App\Repositories\ProductRepository;
 class CartService
 {
     protected CartRepository $cartRepository;
+
     protected ProductRepository $productRepository;
 
     public function __construct()
     {
-        $this->cartRepository = new CartRepository();
-        $this->productRepository = new ProductRepository();
+        $this->cartRepository = new CartRepository;
+        $this->productRepository = new ProductRepository;
     }
 
     public function getOrCreateCart(int $userId)
@@ -26,6 +26,7 @@ class CartService
     public function getCartItems(int $userId)
     {
         $cart = $this->getOrCreateCart($userId);
+
         return $this->cartRepository->findWithItems($cart->id);
     }
 
@@ -34,7 +35,7 @@ class CartService
         $cart = $this->getOrCreateCart($userId);
         $product = $this->productRepository->find($productId);
 
-        if (!$product || $product->quantity < $quantity) {
+        if (! $product || $product->quantity < $quantity) {
             throw new \Exception('Produto não disponível ou quantidade insuficiente em estoque');
         }
 
@@ -54,12 +55,12 @@ class CartService
         $cart = $this->getOrCreateCart($userId);
         $cartItem = $cart->items()->find($itemId);
 
-        if (!$cartItem) {
+        if (! $cartItem) {
             throw new \Exception('Item não encontrado no carrinho');
         }
 
         $product = $this->productRepository->find($cartItem->product_id);
-        if (!$product || $product->quantity < $quantity) {
+        if (! $product || $product->quantity < $quantity) {
             throw new \Exception('Quantidade insuficiente em estoque');
         }
 
@@ -73,7 +74,7 @@ class CartService
         $cart = $this->getOrCreateCart($userId);
         $cartItem = $cart->items()->find($itemId);
 
-        if (!$cartItem) {
+        if (! $cartItem) {
             throw new \Exception('Item não encontrado no carrinho');
         }
 
@@ -83,6 +84,7 @@ class CartService
     public function clearCart(int $userId): bool
     {
         $cart = $this->getOrCreateCart($userId);
+
         return $this->cartRepository->clearCart($cart->id) !== null;
     }
 

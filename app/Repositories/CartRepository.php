@@ -8,7 +8,7 @@ class CartRepository extends BaseRepository
 {
     public function __construct()
     {
-        $this->model = new Cart();
+        $this->model = new Cart;
     }
 
     public function getByUser(int $userId)
@@ -32,6 +32,7 @@ class CartRepository extends BaseRepository
         if ($cart) {
             $cart->items()->delete();
         }
+
         return $cart;
     }
 }

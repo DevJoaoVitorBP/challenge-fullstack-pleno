@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Cart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -14,7 +15,9 @@ class OrderControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $admin;
+
     protected Product $product;
 
     protected function setUp(): void
@@ -65,8 +68,12 @@ class OrderControllerTest extends TestCase
 
     public function test_user_can_create_order_from_cart(): void
     {
-        // Add item to cart
+
+        Bus::fake();
+
+        // Adicionando um item ao carrinho do usuário
         $cart = Cart::factory()->create(['user_id' => $this->user->id]);
+        
         $cart->items()->create([
             'product_id' => $this->product->id,
             'quantity' => 2,

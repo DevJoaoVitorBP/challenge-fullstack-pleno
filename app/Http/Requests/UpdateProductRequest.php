@@ -14,7 +14,7 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         $productId = $this->route('product');
-        
+
         return [
             'name' => "required|string|max:255|unique:products,name,{$productId}",
             'description' => 'required|string|max:1000',

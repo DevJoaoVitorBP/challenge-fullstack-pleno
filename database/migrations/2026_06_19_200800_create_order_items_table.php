@@ -19,17 +19,17 @@ return new class extends Migration
             $table->decimal('unit_price', 10, 2);
             $table->decimal('total_price', 10, 2);
             $table->timestamps();
-            
+
             $table->foreign('order_id')
                 ->references('id')
                 ->on('orders')
                 ->onDelete('cascade');
-            
+
             $table->foreign('product_id')
                 ->references('id')
                 ->on('products')
                 ->onDelete('restrict');
-            
+
             $table->index('order_id');
             $table->index('product_id');
         });
