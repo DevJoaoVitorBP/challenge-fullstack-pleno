@@ -136,10 +136,6 @@ jobs:
     needs: [test, code-quality, swagger]
     if: always()
     
-    defaults:
-      run:
-        working-directory: ./backend
-    
     steps:
       - name: Check Pipeline Status
         run: |
