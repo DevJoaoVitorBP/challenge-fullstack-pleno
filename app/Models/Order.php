@@ -20,11 +20,13 @@ class Order extends Model
         'shipping_address',
         'billing_address',
         'notes',
+        'metadata',
     ];
 
     protected $casts = [
         'shipping_address' => 'array',
         'billing_address' => 'array',
+        'metadata' => 'array',
         'total' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'tax' => 'decimal:2',

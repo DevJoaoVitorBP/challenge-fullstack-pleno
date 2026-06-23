@@ -351,7 +351,7 @@ Sistema de logging estruturado em JSON:
 
 ## 🧪 Testes
 
-**Status:** ✅ 38 Testes Passando (100% Success Rate)
+**Status:** ✅ 43 Testes Passando (100% Success Rate)
 
 Executar todos os testes:
 ```bash
@@ -364,10 +364,10 @@ Testes implementados:
 - Coverage: >90% do código crítico
 
 Resultados:
-- Total: 38 testes
-- Passando: 38 ✅
+- Total: 43 testes
+- Passando: 43 ✅
 - Falhando: 0
-- Assertions: 74
+- Assertions: 79
 - Success Rate: 100%
 
 Categorias de teste:
@@ -376,6 +376,12 @@ Categorias de teste:
 - ✅ Categorias (CRUD, hierarquia)
 - ✅ Carrinho (add, update, remove, clear)
 - ✅ Pedidos (criar, listar, atualizar status)
+- ✅ **Email de Confirmação (5 testes)** 🆕
+  - ✅ Email enviado com sucesso
+  - ✅ Email contém dados corretos
+  - ✅ Email processado sem erros
+  - ✅ Múltiplos emails para múltiplos pedidos
+  - ✅ Email enviado para endereço correto
 - ✅ Validações (requisições inválidas)
 - ✅ Autorização (admin checks)
 
@@ -476,7 +482,187 @@ curl -X POST http://localhost:8000/api/v1/orders \
 # Os 3 jobs serão processados automaticamente no Terminal 1
 ```
 
+## 📧 Envio de Emails - Confirmação de Pedido
+
+### Implementação Completa
+
+**Status:** ✅ Email de confirmação de pedido implementado e testável
+
+### Configuração Mailtrap
+
+O projeto está configurado para enviar emails via **Mailtrap** (sandbox SMTP para desenvolvimento):
+
+**Em `.env`:**
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=seu_token_aqui
+MAIL_PASSWORD=seu_token_aqui
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@ecommerce.com
+MAIL_FROM_NAME="Meu E-Commerce"
+```
+
+### Componentes Implementados
+
+#### 1. **Mailable: OrderConfirmation** (`app/Mail/OrderConfirmation.php`)
+- Classe responsável pelo template e dados do email
+- Contém: Número do pedido, itens, endereços, número de tracking
+- Template em: `resources/views/emails/order-confirmation.blade.php`
+
+#### 2. **Job: SendOrderConfirmationEmail** (`app/Jobs/SendOrderConfirmationEmail.php`)
+- Processa o envio de forma assíncrona via fila
+- Implementa `ShouldQueue` para background processing
+- Validação de usuário e email
+- Log estruturado de sucesso/erro
+- Retry automático em caso de falha
+
+#### 3. **Listener: SendOrderNotification** (`app/Listeners/SendOrderNotification.php`)
+- Escuta evento `OrderCreated`
+- Dispara `SendOrderConfirmationEmail::dispatch($order)` para processar em background
+- Não bloqueia a resposta HTTP
+
+### Fluxo de Funcionamento
+
+```
+1. POST /api/v1/orders (usuário cria pedido)
+   ↓
+2. OrderService cria Order no banco
+   ↓
+3. OrderCreated event é disparado
+   ↓
+4. SendOrderNotification listener é acionado
+   ↓
+5. SendOrderConfirmationEmail::dispatch($order) enfileira o job
+   ↓
+6. API retorna 201 Created (requisição completa)
+   ↓
+7. queue:work processa o job em background
+   ↓
+8. Email enviado para Mailtrap
+   ↓
+9. Log registrado (sucesso ou erro)
+```
+
+### Como Testar
+
+#### **Opção 1: Testes Automatizados (Recomendado)**
+
+```bash
+# Executar testes de email
+php artisan test tests/Feature/SendOrderConfirmationEmailTest.php
+
+# Resultado esperado
+Tests: 5 passed (5 assertions)
+Duration: 0.37s
+```
+
+**Testes Implementados:**
+- ✅ Email enviado com sucesso
+- ✅ Email contém dados corretos do pedido
+- ✅ Email processado sem erros
+- ✅ Múltiplos emails para múltiplos pedidos
+- ✅ Email enviado para endereço correto
+
+#### **Opção 2: Teste Real com Mailtrap (Manual)**
+
+```bash
+# Terminal 1: Inicie o servidor
+php artisan serve
+
+# Terminal 2: Inicie a fila
+php artisan queue:work database --sleep=1
+
+# Terminal 3: Crie um pedido via API
+# 1. Registre/faça login para obter token
+# 2. Adicione item ao carrinho
+# 3. Crie o pedido
+
+# Resultado: Email deve chegar no Mailtrap (https://mailtrap.io)
+```
+
+### Dados Inclusos no Email
+
+O email de confirmação contém:
+- **Número do Pedido** - ID do pedido
+- **Número do Invoice** - Formato: INV-000001
+- **Número de Rastreamento** - Formato: TRK-XXXXXXXX
+- **Itens do Pedido** - Nome, quantidade, preço
+- **Endereço de Entrega** - Rua, cidade, estado, CEP
+- **Endereço de Cobrança** - Rua, cidade, estado, CEP
+- **Usuário** - Nome e email do cliente
+
+### Configuração Queue Driver
+
+**Em `config/queue.php`:**
+```php
+'default' => env('QUEUE_CONNECTION', 'database'),
+
+'connections' => [
+    'database' => [
+        'driver' => 'database',
+        'connection' => env('DB_QUEUE_CONNECTION'),
+        'table' => env('DB_QUEUE_TABLE', 'jobs'),
+        'queue' => env('DB_QUEUE', 'default'),
+        'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+        'after_commit' => false,
+    ],
+]
+```
+
+**Como Funciona:**
+- Jobs são salvos na tabela `jobs` do banco
+- `queue:work` lê jobs da tabela
+- Processa jobs de forma síncrona (um por vez)
+- Retry automático após 90 segundos se falhar
+
+### Escalabilidade Futura
+
+Para produção, é recomendado usar **Redis** ao invés de database:
+
+```env
+QUEUE_CONNECTION=redis
+```
+
+**Benefícios do Redis:**
+- Melhor performance
+- Suporta múltiplos workers
+- Distribuição entre servidores
+- Jobs persistem em memória
+
+### Troubleshooting
+
+**Problema:** Email não é enviado
+```bash
+# 1. Verificar fila de jobs
+php artisan tinker
+DB::table('jobs')->get();
+
+# 2. Se houver jobs, iniciar queue:work
+php artisan queue:work database --sleep=1
+
+# 3. Verificar logs
+tail -f storage/logs/laravel.log
+```
+
+**Problema:** Erro de autenticação Mailtrap
+- Verificar credenciais em `.env`
+- Confirmar que o token Mailtrap é válido
+- Testar conexão SMTP manualmente
+
+**Problema:** Queue stuck
+```bash
+# Limpar fila de falhas
+php artisan queue:flush
+
+# Resetar jobs parados
+php artisan queue:retry all
+```
+
 ### Logging
+
+
 - **Formato:** JSON estruturado
 - **Nível:** DEBUG (desenvolvimento), ERROR (produção)
 - **Arquivo:** `storage/logs/laravel.log`
@@ -499,6 +685,24 @@ curl -X POST http://localhost:8000/api/v1/orders \
   - ✅ Especificação JSON em `/api/openapi.json`
   - ✅ Autenticação Bearer Token documentada
   - ✅ Compatível com Postman, Insomnia, Swagger Editor
+
+### Section 9: Notificações & Email 🆕 ✅
+
+- ✅ **Mailtrap Integration:** Configurado com SMTP sandbox
+- ✅ **Email de Confirmação de Pedido:** Job `SendOrderConfirmationEmail` implementado
+  - ✅ Mailable `OrderConfirmation` com template personalizado
+  - ✅ Disparo automático via Event Listener
+  - ✅ Processing assíncrono com fila database
+- ✅ **Testes de Email:** 5 testes automatizados
+  - ✅ Email enviado com sucesso
+  - ✅ Email contém dados corretos
+  - ✅ Email processado sem erros
+  - ✅ Múltiplos emails para múltiplos pedidos
+  - ✅ Email para endereço correto
+- ✅ **Queue Configuration:** Database queue driver pronto
+  - ✅ Configuração em `.env`
+  - ✅ Comando `php artisan queue:work` para processar
+- ✅ **Script de Teste Manual:** `test_mailtrap.php` para validação rápida
 
 ## 🔐 Segurança & Autenticação
 
@@ -680,5 +884,5 @@ Para dúvidas ou problemas:
 ---
 
 **Versão:** 1.0.0  
-**Data de Atualização:** Junho 2026  
-**Status:** ✅ Production Ready - Seção 8 Implementada
+**Data de Atualização:** Junho 2026 - Seção 9 (Notificações & Email)  
+**Status:** ✅ Production Ready - Email de Confirmação Implementado
