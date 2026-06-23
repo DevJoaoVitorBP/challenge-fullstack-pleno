@@ -45,6 +45,7 @@ jobs:
         run: |
           cp .env.example .env.testing || true
           php artisan key:generate --env=testing
+          touch database/database.sqlite
           php artisan migrate --env=testing --database=sqlite_testing
       
       - name: Run PHPUnit Tests
