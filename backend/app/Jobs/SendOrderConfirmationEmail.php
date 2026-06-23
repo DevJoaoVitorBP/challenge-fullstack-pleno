@@ -23,7 +23,7 @@ class SendOrderConfirmationEmail implements ShouldQueue
             if (! $this->order->user || ! $this->order->user->email) {
                 throw new \Exception('Usuário ou email não encontrado para o pedido');
             }
-
+   
             Log::info('Iniciando envio de email de confirmação do pedido', [
                 'order_id' => $this->order->id,
                 'user_id' => $this->order->user_id,
