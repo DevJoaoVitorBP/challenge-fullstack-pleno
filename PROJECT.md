@@ -1086,18 +1086,6 @@ act push
 act push -j test
 ```
 
-### Documentação Completa
-
-Para informações detalhadas sobre CI/CD, veja [CI_CD.md](CI_CD.md):
-
-- Configuração completa do workflow
-- Troubleshooting
-- Secrets do GitHub
-- Deploy automático (próximos passos)
-- Coverage reporting
-
----
-
 ## 📞 Suporte
 
 Para dúvidas ou problemas:
