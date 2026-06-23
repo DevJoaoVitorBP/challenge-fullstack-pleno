@@ -1,0 +1,132 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.2', '8.3']
+    
+    services:
+      sqlite:
+        image: sqlite:latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo, pdo_sqlite, pdo_mysql, curl, dom, json, zip, gd
+          coverage: xdebug
+          tools: composer:latest
+      
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+      
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      
+      - name: Setup Database
+        run: |
+          cp .env.example .env.testing || true
+          php artisan key:generate --env=testing
+          php artisan migrate --env=testing --database=sqlite_testing
+      
+      - name: Run PHPUnit Tests
+        run: ./vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
+      
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+  
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, json, zip
+          tools: composer:latest
+      
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      
+      - name: Check PSR-12 Code Style with Pint
+        run: ./vendor/bin/pint --test
+      
+      - name: Laravel Insights (Optional Static Analysis)
+        run: |
+          composer global require nunomaduro/larastan ^2.0 --prefer-dist --no-interaction || true
+          ./vendor/bin/phpstan analyse app --level=5 --memory-limit=512M || true
+        continue-on-error: true
+  
+  swagger:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, json, zip
+          tools: composer:latest
+      
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      
+      - name: Generate Swagger Documentation
+        run: php artisan l5-swagger:generate || true
+      
+      - name: Check Swagger JSON
+        run: |
+          if [ -f "public/openapi.json" ]; then
+            echo "✅ Swagger documentation generated successfully"
+            cat public/openapi.json | head -20
+          else
+            echo "⚠️  Swagger file not found"
+          fi
+  
+  summary:
+    runs-on: ubuntu-latest
+    needs: [test, code-quality, swagger]
+    if: always()
+    
+    steps:
+      - name: Check Pipeline Status
+        run: |
+          echo "Pipeline Status: ${{ job.status }}"
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ All checks passed!"
+          else
+            echo "❌ Some checks failed. Please review the logs."
+            exit 1
+          fi

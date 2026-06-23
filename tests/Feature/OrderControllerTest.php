@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Cart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,7 +14,9 @@ class OrderControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $admin;
+
     protected Product $product;
 
     protected function setUp(): void

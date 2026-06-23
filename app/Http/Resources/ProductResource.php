@@ -24,7 +24,7 @@ class ProductResource extends JsonResource
                 'name' => $this->category->name,
                 'slug' => $this->category->slug,
             ],
-            'tags' => $this->tags->map(fn($tag) => [
+            'tags' => $this->tags->map(fn ($tag) => [
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'slug' => $tag->slug,

@@ -19,14 +19,14 @@ class ProductController extends Controller
 
     public function __construct()
     {
-        $this->service = new ProductService();
+        $this->service = new ProductService;
     }
 
     public function index(): JsonResponse
     {
         $filters = request()->only('category_id', 'search', 'min_price', 'max_price', 'sort', 'sort_direction', 'per_page');
         $products = $this->service->getAllProducts($filters);
-        
+
         return $this->paginatedResponse(
             ProductResource::collection($products),
             'Produtos listados com sucesso'
@@ -37,7 +37,7 @@ class ProductController extends Controller
     {
         $product = $this->service->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             return $this->notFoundResponse('Produto n�o encontrado');
         }
 
@@ -49,7 +49,7 @@ class ProductController extends Controller
         $dto = ProductDTO::fromArray($request->validated());
         $product = $this->service->createProduct($dto);
 
-        if (!$product) {
+        if (! $product) {
             return $this->errorResponse('Erro ao criar produto', null, 400);
         }
 
@@ -63,14 +63,14 @@ class ProductController extends Controller
     {
         $product = $this->service->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             return $this->notFoundResponse('Produto n�o encontrado');
         }
 
         $dto = ProductDTO::fromArray($request->validated());
         $updated = $this->service->updateProduct($id, $dto);
 
-        if (!$updated) {
+        if (! $updated) {
             return $this->errorResponse('Erro ao atualizar produto', null, 400);
         }
 
@@ -84,13 +84,13 @@ class ProductController extends Controller
     {
         $product = $this->service->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             return $this->notFoundResponse('Produto n�o encontrado');
         }
 
         $deleted = $this->service->deleteProduct($id);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return $this->errorResponse('Erro ao deletar produto', null, 400);
         }
 

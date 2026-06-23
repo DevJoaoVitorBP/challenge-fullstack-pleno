@@ -16,6 +16,7 @@ class SendOrderConfirmationEmailTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Product $product;
 
     protected function setUp(): void
@@ -24,7 +25,7 @@ class SendOrderConfirmationEmailTest extends TestCase
 
         $this->user = User::factory()->create([
             'email' => 'customer@example.com',
-            'name' => 'João Silva'
+            'name' => 'João Silva',
         ]);
 
         $this->product = Product::factory()->create(['quantity' => 100]);

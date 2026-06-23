@@ -37,7 +37,7 @@ class RateLimitMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Use IP address as the rate limit key
-        $key = 'rate_limit:' . $request->ip();
+        $key = 'rate_limit:'.$request->ip();
 
         // Increment request count
         $requests = $this->limiter->attempts($key);
@@ -51,7 +51,7 @@ class RateLimitMiddleware
         if ($requests > self::MAX_REQUESTS) {
             return response()->json([
                 'success' => false,
-                'message' => 'Limite de requisições excedido. Máximo de ' . self::MAX_REQUESTS . ' requisições por minuto.',
+                'message' => 'Limite de requisições excedido. Máximo de '.self::MAX_REQUESTS.' requisições por minuto.',
             ], 429)->header('Retry-After', self::TIME_WINDOW);
         }
 

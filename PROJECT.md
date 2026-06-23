@@ -384,7 +384,111 @@ Categorias de teste:
   - ✅ Email enviado para endereço correto
 - ✅ Validações (requisições inválidas)
 - ✅ Autorização (admin checks)
+## 📐 Boas Práticas & Padrões de Código
 
+### PHP: PSR-12 com Laravel Pint ✅
+
+**Laravel Pint** é um code fixer que garante conformidade com **PSR-12** (PHP Standards Recommendation).
+
+#### Instalação
+
+```bash
+composer install
+# Já incluído em require-dev
+```
+
+#### Como Usar
+
+**Verificar estilo PSR-12:**
+```bash
+./vendor/bin/pint --test
+```
+
+Saída esperada:
+```
+✓ All files satisfy the Pint code style configuration.
+```
+
+**Corrigir automaticamente:**
+```bash
+./vendor/bin/pint
+```
+
+Saída:
+```
+✓ 0 file(s) auto-fixed
+```
+
+**Verificar arquivo específico:**
+```bash
+./vendor/bin/pint --test app/Models/User.php
+```
+
+**Modo verbose (mais detalhes):**
+```bash
+./vendor/bin/pint --verbose
+```
+
+#### Padrões PSR-12 Aplicados
+
+O projeto segue rigorosamente:
+
+- ✅ **Indentação:** 4 espaços
+- ✅ **Line Length:** Máximo 120 caracteres
+- ✅ **Namespaces:** Declarados corretamente
+- ✅ **Use Statements:** Organizados alfabeticamente
+- ✅ **Class Declaration:** Estrutura padronizada
+- ✅ **Method Declaration:** Formatação consistente
+- ✅ **Control Structures:** `if`, `for`, `foreach`, `while`, `switch` com espaçamento correto
+- ✅ **Variáveis:** Nomenclatura consistente (camelCase para métodos, snake_case para variáveis)
+
+#### Exemplo PSR-12
+
+```php
+<?php
+
+namespace App\Services;
+
+use App\Models\Order;
+use App\Repositories\OrderRepository;
+use Illuminate\Support\Facades\Mail;
+
+class OrderService
+{
+    public function __construct(
+        private OrderRepository $repository,
+    ) {}
+
+    public function createOrder(array $data): Order
+    {
+        $order = $this->repository->create($data);
+
+        // Enviar email em background
+        Mail::queue(new OrderConfirmation($order));
+
+        return $order;
+    }
+}
+```
+
+#### CI/CD Integration
+
+Recomenda-se adicionar ao pipeline:
+
+```bash
+# Na pipeline (GitHub Actions, GitLab CI, etc)
+./vendor/bin/pint --test
+```
+
+Se falhar, o deploy é bloqueado. Garante código limpo em produção.
+
+#### JavaScript/Frontend ℹ️
+
+Projeto é **100% back-end** (Laravel API). Frontend minimal com templates Blade + Tailwind.
+
+- ❌ ESLint: Não necessário (sem JavaScript complexo)
+- ❌ Prettier: Não necessário (sem TypeScript/React)
+- ✅ PSR-12 com Pint: Suficiente para padrão de código
 ## � Dependências do Projeto
 
 ### Core Framework
@@ -397,11 +501,11 @@ Categorias de teste:
 - **OpenAPI 3.0.0** - Especificação de API padrão da indústria
 
 ### Development Tools
-- **PHPUnit** - Framework de testes
-- **Laravel Tinker** - Shell interativo
-- **Laravel Pint** - Code style fixer
-
-### Database & Cache
+- **PHPUnit 11.5.50** - Framework de testes
+- **Laravel Tinker 2.10.1** - Shell interativo
+- **Laravel Pint 1.24** - PSR-12 Code style fixer ✅
+- **Faker** - Gerador de dados fictícios para testes
+- **Collision 8.6** - Pretty exceptions display
 - **SQLite** - Banco de dados (desenvolvimento)
 - **Database Cache Driver** - Cache em banco de dados
 - **Database Queue Driver** - Fila em banco de dados
@@ -704,6 +808,45 @@ php artisan queue:retry all
   - ✅ Comando `php artisan queue:work` para processar
 - ✅ **Script de Teste Manual:** `test_mailtrap.php` para validação rápida
 
+### Section 10: Code Quality & Standards 🆕 ✅
+
+- ✅ **PSR-12 Compliance:** Laravel Pint 1.24 configurado
+  - ✅ Verificação com `./vendor/bin/pint --test`
+  - ✅ Auto-fix com `./vendor/bin/pint`
+  - ✅ Indentação: 4 espaços
+  - ✅ Line length: Máximo 120 caracteres
+  - ✅ Todos os arquivos PHP conformes
+- ✅ **Code Style:** Aplicado a toda codebase
+  - ✅ Controllers
+  - ✅ Models
+  - ✅ Services
+  - ✅ Repositories
+  - ✅ Tests
+- ✅ **CI/CD Ready:** Pronto para pipeline de qualidade
+
+### Section 11: CI/CD Pipeline 🆕 ✅
+
+- ✅ **GitHub Actions Workflow:** Pipeline completo configurado
+  - ✅ Arquivo `.github/workflows/ci.yml`
+  - ✅ Acionamento em push e pull_request
+  - ✅ Suporte a múltiplas versões PHP (8.2, 8.3)
+- ✅ **Job: Tests:** PHPUnit com coverage
+  - ✅ Database em memória (:memory:)
+  - ✅ Codecov integration
+  - ✅ 43 testes passando (100%)
+- ✅ **Job: Code Quality:** PSR-12 validation
+  - ✅ Laravel Pint --test
+  - ✅ PHPStan análise estática
+  - ✅ Todos arquivos conformes
+- ✅ **Job: Swagger:** Geração automática de docs
+  - ✅ `php artisan l5-swagger:generate`
+  - ✅ OpenAPI JSON atualizado
+- ✅ **Environment Config:** `.env.testing` criado
+  - ✅ Database connection para testes
+  - ✅ Queue connection sync (síncrono)
+  - ✅ Mail driver log (não enviá emails reais)
+- ✅ **Documentação:** [CI_CD.md](CI_CD.md) detalhada
+
 ## 🔐 Segurança & Autenticação
 
 ### Autenticação (Laravel Sanctum)
@@ -874,15 +1017,97 @@ curl -X POST http://localhost:8000/api/v1/orders \
   }'
 ```
 
+## � CI/CD Pipeline - GitHub Actions
+
+### Visão Geral
+
+O projeto inclui um pipeline CI/CD completo com **GitHub Actions** que:
+
+- ✅ **Testa** em múltiplas versões PHP (8.2, 8.3)
+- ✅ **Valida** PSR-12 com Laravel Pint
+- ✅ **Gera** documentação Swagger automaticamente
+- ✅ **Mede** cobertura de testes com Codecov
+- ✅**Executa** em cada push e pull request
+
+### Estrutura
+
+```
+.github/workflows/
+└── ci.yml              # Pipeline principal
+.env.testing           # Config para testes
+```
+
+### Jobs do Pipeline
+
+#### 1. **test** - Testes Automatizados
+- Roda PHPUnit em PHP 8.2 e 8.3
+- Database em memória (`:memory:`)
+- Upload de coverage para Codecov
+- Resultado: ✅ 43 testes passando (100%)
+
+#### 2. **code-quality** - Qualidade de Código
+- Verifica PSR-12 com `./vendor/bin/pint --test`
+- Análise estática com PHPStan
+- Resultado: ✅ Todos arquivos conformes
+
+#### 3. **swagger** - Documentação
+- Gera `public/openapi.json`
+- Sincroniza documentação com código
+- Resultado: ✅ Documentação atualizada
+
+#### 4. **summary** - Status Final
+- Consolida resultado de todos os jobs
+- Falha se algum job falhar
+
+### Como Usar
+
+**1. Push do Código**
+```bash
+git add .github/workflows/ci.yml .env.testing
+git commit -m "chore: add CI/CD pipeline"
+git push origin main
+```
+
+**2. Visualizar no GitHub**
+- Ir para aba **Actions**
+- Ver pipeline rodando
+- Clicar em cada job para detalhes
+
+**3. Rodar Localmente (Opcional)**
+```bash
+# Instalar Act (simula GitHub Actions)
+choco install act-cli  # Windows
+brew install act       # macOS
+
+# Rodar pipeline
+act push
+
+# Rodar job específico
+act push -j test
+```
+
+### Documentação Completa
+
+Para informações detalhadas sobre CI/CD, veja [CI_CD.md](CI_CD.md):
+
+- Configuração completa do workflow
+- Troubleshooting
+- Secrets do GitHub
+- Deploy automático (próximos passos)
+- Coverage reporting
+
+---
+
 ## 📞 Suporte
 
 Para dúvidas ou problemas:
 1. Verifique a documentação Swagger em `/api/documentation`
 2. Consulte os testes em `tests/` para exemplos de uso
 3. Verifique logs em `storage/logs/laravel.log`
+4. Para CI/CD, veja [CI_CD.md](CI_CD.md)
 
 ---
 
 **Versão:** 1.0.0  
-**Data de Atualização:** Junho 2026 - Seção 9 (Notificações & Email)  
-**Status:** ✅ Production Ready - Email de Confirmação Implementado
+**Data de Atualização:** Junho 2026 - Seção 11 (CI/CD Pipeline)  
+**Status:** ✅ Production Ready - CI/CD GitHub Actions, 43 Testes, PSR-12, Email

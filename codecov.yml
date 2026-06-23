@@ -1,0 +1,51 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+ignore:
+  - "tests"
+  - "config"
+  - "bootstrap"
+  - "database"
+  - "storage"
+  - "vendor"
+  - "app/Providers"
+  - "app/Console"
+  - "routes"
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  branches:
+    - main
+    - master
+    - develop
+
+flags:
+  unittests:
+    carryforward: true
+    paths:
+      - app
+    statuses:
+      - unit
+
+status:
+  project:
+    default:
+      target: 70
+      threshold: 5%
+      base: auto
+  patch:
+    default:
+      target: 70
+      threshold: 5%
+  changes:
+    default:
+      compared_to_base: true

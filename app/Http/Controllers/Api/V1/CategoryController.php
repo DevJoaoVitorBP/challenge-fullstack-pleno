@@ -17,18 +17,19 @@ class CategoryController extends Controller
     use ApiResponses;
 
     protected CategoryService $service;
+
     protected ProductService $productService;
 
     public function __construct()
     {
-        $this->service = new CategoryService();
-        $this->productService = new ProductService();
+        $this->service = new CategoryService;
+        $this->productService = new ProductService;
     }
 
     public function index(): JsonResponse
     {
         $categories = $this->service->getCategoryHierarchy();
-        
+
         return $this->successResponse(
             CategoryResource::collection($categories),
             'Categorias listadas com sucesso'
@@ -39,7 +40,7 @@ class CategoryController extends Controller
     {
         $category = $this->service->getCategoryById($id);
 
-        if (!$category) {
+        if (! $category) {
             return $this->notFoundResponse('Categoria n�o encontrada');
         }
 
@@ -53,7 +54,7 @@ class CategoryController extends Controller
     {
         $category = $this->service->getCategoryById($id);
 
-        if (!$category) {
+        if (! $category) {
             return $this->notFoundResponse('Categoria n�o encontrada');
         }
 
@@ -71,7 +72,7 @@ class CategoryController extends Controller
         $dto = CategoryDTO::fromArray($request->validated());
         $category = $this->service->createCategory($dto);
 
-        if (!$category) {
+        if (! $category) {
             return $this->errorResponse('Erro ao criar categoria', null, 400);
         }
 
@@ -85,14 +86,14 @@ class CategoryController extends Controller
     {
         $category = $this->service->getCategoryById($id);
 
-        if (!$category) {
+        if (! $category) {
             return $this->notFoundResponse('Categoria n�o encontrada');
         }
 
         $dto = CategoryDTO::fromArray($request->validated());
         $updated = $this->service->updateCategory($id, $dto);
 
-        if (!$updated) {
+        if (! $updated) {
             return $this->errorResponse('Erro ao atualizar categoria', null, 400);
         }
 
@@ -106,13 +107,13 @@ class CategoryController extends Controller
     {
         $category = $this->service->getCategoryById($id);
 
-        if (!$category) {
+        if (! $category) {
             return $this->notFoundResponse('Categoria n�o encontrada');
         }
 
         $deleted = $this->service->deleteCategory($id);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return $this->errorResponse('Erro ao deletar categoria', null, 400);
         }
 

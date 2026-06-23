@@ -3,9 +3,9 @@
 namespace Tests\Unit;
 
 use App\DTOs\ProductDTO;
-use App\Services\ProductService;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +18,7 @@ class ProductServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ProductService();
+        $this->service = new ProductService;
     }
 
     public function test_can_create_product(): void

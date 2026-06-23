@@ -34,6 +34,7 @@ abstract class BaseRepository implements RepositoryInterface
         if ($record) {
             $record->update($data);
         }
+
         return $record;
     }
 
@@ -43,6 +44,7 @@ abstract class BaseRepository implements RepositoryInterface
         if ($record) {
             $record->delete();
         }
+
         return $record;
     }
 }

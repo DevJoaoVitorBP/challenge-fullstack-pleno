@@ -6,7 +6,6 @@ use App\DTOs\OrderDTO;
 use App\Events\OrderCreated;
 use App\Events\StockLow;
 use App\Jobs\ProcessOrder;
-use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\StockMovement;
 use App\Repositories\CartRepository;
@@ -17,16 +16,19 @@ use Illuminate\Support\Facades\DB;
 class OrderService
 {
     protected OrderRepository $orderRepository;
+
     protected ProductRepository $productRepository;
+
     protected CartRepository $cartRepository;
+
     protected CartService $cartService;
 
     public function __construct()
     {
-        $this->orderRepository = new OrderRepository();
-        $this->productRepository = new ProductRepository();
-        $this->cartRepository = new CartRepository();
-        $this->cartService = new CartService();
+        $this->orderRepository = new OrderRepository;
+        $this->productRepository = new ProductRepository;
+        $this->cartRepository = new CartRepository;
+        $this->cartService = new CartService;
     }
 
     public function getUserOrders(int $userId)
@@ -66,7 +68,7 @@ class OrderService
                 ];
 
                 // Verificar estoque
-                if (!$this->productRepository->find($product->id) || 
+                if (! $this->productRepository->find($product->id) ||
                     $product->quantity < $cartItem->quantity) {
                     throw new \Exception("Produto {$product->name} fora de estoque");
                 }
@@ -135,6 +137,7 @@ class OrderService
     public function updateOrderStatus(int $id, string $status): ?OrderDTO
     {
         $order = $this->orderRepository->updateStatus($id, $status);
+
         return $order ? OrderDTO::fromArray($order->toArray()) : null;
     }
 

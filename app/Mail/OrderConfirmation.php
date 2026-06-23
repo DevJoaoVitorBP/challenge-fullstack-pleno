@@ -32,8 +32,8 @@ class OrderConfirmation extends Mailable
                 'order' => $this->order,
                 'orderItems' => $this->order->items()->get(),
                 'user' => $this->order->user,
-                'invoiceNumber' => "INV-" . str_pad($this->order->id, 6, '0', STR_PAD_LEFT),
-                'trackingNumber' => "TRK-" . strtoupper(substr(uniqid(), -8)),
+                'invoiceNumber' => 'INV-'.str_pad($this->order->id, 6, '0', STR_PAD_LEFT),
+                'trackingNumber' => 'TRK-'.strtoupper(substr(uniqid(), -8)),
             ],
         );
     }

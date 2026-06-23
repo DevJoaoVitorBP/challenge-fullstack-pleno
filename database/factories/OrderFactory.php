@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class OrderFactory extends Factory
         $total = $subtotal + $tax + $shipping_cost;
 
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'status' => $this->faker->randomElement(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
             'subtotal' => $subtotal,
             'tax' => $tax,

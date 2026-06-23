@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\StockLow;
 use App\Models\Order;
 use App\Models\StockMovement;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,7 +35,7 @@ class UpdateStockAfterOrder implements ShouldQueue
                 if ($product->quantity < $orderItem->quantity) {
                     throw new \Exception(
                         "Estoque insuficiente para o produto: {$product->name}. "
-                        . "Disponível: {$product->quantity}, Solicitado: {$orderItem->quantity}"
+                        ."Disponível: {$product->quantity}, Solicitado: {$orderItem->quantity}"
                     );
                 }
 
@@ -61,7 +62,7 @@ class UpdateStockAfterOrder implements ShouldQueue
                     ]);
 
                     // Disparar evento de estoque baixo
-                    event(new \App\Events\StockLow($product));
+                    event(new StockLow($product));
                 }
 
                 Log::info('Estoque atualizado com sucesso', [

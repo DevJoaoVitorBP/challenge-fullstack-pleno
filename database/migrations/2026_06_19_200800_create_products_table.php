@@ -24,12 +24,12 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->foreign('category_id')
                 ->references('id')
                 ->on('categories')
                 ->onDelete('restrict');
-            
+
             $table->index('category_id');
             $table->index('active');
             $table->index('slug');
