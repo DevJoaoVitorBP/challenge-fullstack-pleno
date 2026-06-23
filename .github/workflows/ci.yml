@@ -15,10 +15,6 @@ jobs:
       matrix:
         php-version: ['8.2', '8.3']
     
-    services:
-      sqlite:
-        image: sqlite:latest
-    
     steps:
       - uses: actions/checkout@v4
       
