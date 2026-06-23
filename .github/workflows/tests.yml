@@ -1,10 +1,23 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+  push:
+    paths:                    
+      - 'backend/**'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/tests.yml'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./backend
+    
     strategy:
       matrix:
         php-version: [8.2, 8.3]
@@ -26,7 +39,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Install Dependencies
         run: composer install --no-interaction
