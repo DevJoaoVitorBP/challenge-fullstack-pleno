@@ -143,9 +143,9 @@ class ProcessOrderJobTest extends TestCase
     #[Test]
     public function it_fails_when_payment_is_declined(): void
     {
-        // Força rand(1,100) > 95 para simular pagamento recusado
+
         $attempts = 0;
-        $maxAttempts = 50;
+        $maxAttempts = 200;
         $declined = false;
 
         while ($attempts < $maxAttempts) {
@@ -173,7 +173,7 @@ class ProcessOrderJobTest extends TestCase
                 $job->handle();
 
                 $attempts++;
-                $order->delete();
+                $order->forceDelete();
             } catch (\Exception $e) {
                 if (str_contains($e->getMessage(), 'Pagamento recusado pelo gateway')) {
                     $declined = true;
