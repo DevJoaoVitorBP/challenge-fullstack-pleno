@@ -4,13 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_register(): void
+    #[Test]
+    public function user_can_register(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'New User',
@@ -31,7 +33,8 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_login(): void
+    #[Test]
+    public function user_can_login(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -55,7 +58,8 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    public function test_login_fails_with_invalid_credentials(): void
+    #[Test]
+    public function login_fails_with_invalid_credentials(): void
     {
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => 'nonexistent@example.com',
@@ -68,7 +72,8 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    public function test_authenticated_user_can_get_profile(): void
+    #[Test]
+    public function authenticated_user_can_get_profile(): void
     {
         $user = User::factory()->create();
 
@@ -84,7 +89,8 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_can_logout(): void
+    #[Test]
+    public function user_can_logout(): void
     {
         $user = User::factory()->create();
 

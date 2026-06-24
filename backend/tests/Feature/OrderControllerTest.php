@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -29,6 +30,7 @@ class OrderControllerTest extends TestCase
         $this->product = Product::factory()->create(['quantity' => 100]);
     }
 
+    #[Test]
     public function test_user_can_get_orders(): void
     {
         Order::factory()->create(['user_id' => $this->user->id]);
@@ -41,6 +43,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_user_can_view_order(): void
     {
         $order = Order::factory()->create(['user_id' => $this->user->id]);
@@ -56,6 +59,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_user_cannot_view_other_user_order(): void
     {
         $other_user = User::factory()->create();
@@ -66,6 +70,7 @@ class OrderControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    #[Test]
     public function test_user_can_create_order_from_cart(): void
     {
 
@@ -100,6 +105,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    #[Test]
     public function test_order_requires_valid_address(): void
     {
         $response = $this->actingAs($this->user)->postJson('/api/v1/orders', [
@@ -110,6 +116,7 @@ class OrderControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
+    #[Test]
     public function test_admin_can_update_order_status(): void
     {
         $order = Order::factory()->create(['status' => 'pending']);
@@ -121,6 +128,7 @@ class OrderControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    #[Test]
     public function test_user_cannot_update_order_status(): void
     {
         $order = Order::factory()->create(['status' => 'pending']);

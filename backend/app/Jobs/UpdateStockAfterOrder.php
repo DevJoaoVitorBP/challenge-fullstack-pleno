@@ -20,55 +20,52 @@ class UpdateStockAfterOrder implements ShouldQueue
 
     public function handle(): void
     {
+        $this->order->load('items.product');
+
         Log::info('Iniciando atualização de estoque para o pedido', [
             'order_id' => $this->order->id,
-            'items_count' => $this->order->orderItems->count(),
+            'items_count' => $this->order->items->count(),
         ]);
 
         try {
             DB::beginTransaction();
 
-            foreach ($this->order->orderItems as $orderItem) {
-                $product = $orderItem->product;
+            foreach ($this->order->items as $item) {
+                $product = $item->product;
 
-                // Validar estoque
-                if ($product->quantity < $orderItem->quantity) {
+                if ($product->quantity < $item->quantity) {
                     throw new \Exception(
                         "Estoque insuficiente para o produto: {$product->name}. "
-                        ."Disponível: {$product->quantity}, Solicitado: {$orderItem->quantity}"
+                        ."Disponível: {$product->quantity}, Solicitado: {$item->quantity}"
                     );
                 }
 
-                // Decrementar estoque do produto
-                $product->decrement('quantity', $orderItem->quantity);
+                $product->decrement('quantity', $item->quantity);
 
-                // Registrar movimento de estoque
                 StockMovement::create([
                     'product_id' => $product->id,
                     'type' => 'saida',
-                    'quantity' => $orderItem->quantity,
+                    'quantity' => $item->quantity,
                     'reason' => 'Venda',
                     'reference_type' => Order::class,
                     'reference_id' => $this->order->id,
                 ]);
 
-                // Verificar se o estoque ficou abaixo do mínimo
+                $product->refresh(); // garante o valor atualizado antes de checar min_quantity
+
                 if ($product->quantity < $product->min_quantity) {
                     Log::warning('Estoque do produto abaixo do mínimo', [
                         'product_id' => $product->id,
-                        'product_name' => $product->name,
                         'current_quantity' => $product->quantity,
                         'min_quantity' => $product->min_quantity,
                     ]);
 
-                    // Disparar evento de estoque baixo
                     event(new StockLow($product));
                 }
 
                 Log::info('Estoque atualizado com sucesso', [
                     'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'quantity_sold' => $orderItem->quantity,
+                    'quantity_sold' => $item->quantity,
                     'remaining_quantity' => $product->quantity,
                 ]);
             }

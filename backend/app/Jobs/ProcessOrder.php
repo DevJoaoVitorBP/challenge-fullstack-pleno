@@ -136,7 +136,7 @@ class ProcessOrder implements ShouldQueue
      */
     private function confirmStockAvailability(): void
     {
-        foreach ($this->order->items() as $item) {
+        foreach ($this->order->items()->get() as $item) {
             $product = $item->product;
 
             if (! $product) {

@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\CategoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CategoryControllerTest extends TestCase
@@ -21,7 +23,8 @@ class CategoryControllerTest extends TestCase
         $this->admin = User::factory()->create(['is_admin' => true]);
     }
 
-    public function test_can_list_categories(): void
+    #[Test]
+    public function can_list_categories(): void
     {
         Category::factory(5)->create();
 
@@ -34,7 +37,8 @@ class CategoryControllerTest extends TestCase
         $this->assertIsArray($response->json('data'));
     }
 
-    public function test_can_get_category_by_id(): void
+    #[Test]
+    public function can_get_category_by_id(): void
     {
         $category = Category::factory()->create();
 
@@ -50,7 +54,8 @@ class CategoryControllerTest extends TestCase
         ]);
     }
 
-    public function test_can_list_products_by_category(): void
+    #[Test]
+    public function can_list_products_by_category(): void
     {
         $category = Category::factory()->create();
         Product::factory(5)->create(['category_id' => $category->id]);
@@ -63,7 +68,8 @@ class CategoryControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_create_category(): void
+    #[Test]
+    public function admin_can_create_category(): void
     {
         $response = $this->actingAs($this->admin)->postJson('/api/v1/categories', [
             'name' => 'New Category',
@@ -79,7 +85,8 @@ class CategoryControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_update_category(): void
+    #[Test]
+    public function admin_can_update_category(): void
     {
         $category = Category::factory()->create();
 
@@ -94,7 +101,8 @@ class CategoryControllerTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_delete_category(): void
+    #[Test]
+    public function admin_can_delete_category(): void
     {
         $category = Category::factory()->create();
 
@@ -104,5 +112,40 @@ class CategoryControllerTest extends TestCase
         $response->assertJson([
             'success' => true,
         ]);
+    }
+
+    #[Test]
+    public function get_all_categories_returns_active_categories(): void
+    {
+        Category::factory(3)->create(['active' => true]);
+
+        $service = new CategoryService;
+        $result = $service->getAllCategories();
+
+        $this->assertCount(3, $result);
+    }
+
+    #[Test]
+    public function get_category_by_slug(): void
+    {
+        $category = Category::factory()->create(['name' => 'My Category']);
+
+        $service = new CategoryService;
+        $result = $service->getCategoryBySlug($category->slug);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($category->slug, $result->slug);
+    }
+
+    #[Test]
+    public function get_child_categories(): void
+    {
+        $parent = Category::factory()->create();
+        Category::factory(3)->create(['parent_id' => $parent->id]);
+
+        $service = new CategoryService;
+        $result = $service->getChildCategories($parent->id);
+
+        $this->assertCount(3, $result);
     }
 }

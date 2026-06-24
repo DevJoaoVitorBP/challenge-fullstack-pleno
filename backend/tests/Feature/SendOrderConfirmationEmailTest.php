@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class SendOrderConfirmationEmailTest extends TestCase
@@ -31,10 +32,8 @@ class SendOrderConfirmationEmailTest extends TestCase
         $this->product = Product::factory()->create(['quantity' => 100]);
     }
 
-    /**
-     * Test que o email é enviado com sucesso quando o job é executado
-     */
-    public function test_job_sends_confirmation_email_successfully(): void
+    #[Test]
+    public function job_sends_confirmation_email_successfully(): void
     {
         Mail::fake();
 
@@ -44,7 +43,6 @@ class SendOrderConfirmationEmailTest extends TestCase
             'status' => 'pending',
         ]);
 
-        // Adicionar item ao pedido
         $order->items()->create([
             'product_id' => $this->product->id,
             'quantity' => 2,
@@ -52,17 +50,13 @@ class SendOrderConfirmationEmailTest extends TestCase
             'total_price' => 299.98,
         ]);
 
-        // Executar o job
         (new SendOrderConfirmationEmail($order))->handle();
 
-        // Verificar se o email foi enviado
         Mail::assertSent(OrderConfirmation::class);
     }
 
-    /**
-     * Test que o email contém os dados corretos do pedido
-     */
-    public function test_email_contains_order_details(): void
+    #[Test]
+    public function email_contains_order_details(): void
     {
         Mail::fake();
 
@@ -80,14 +74,11 @@ class SendOrderConfirmationEmailTest extends TestCase
 
         (new SendOrderConfirmationEmail($order))->handle();
 
-        // Simplesmente verificar que o email foi enviado
         Mail::assertSent(OrderConfirmation::class);
     }
 
-    /**
-     * Test que o job processa corretamente sem erros
-     */
-    public function test_job_processes_successfully(): void
+    #[Test]
+    public function job_processes_successfully(): void
     {
         Mail::fake();
 
@@ -102,17 +93,13 @@ class SendOrderConfirmationEmailTest extends TestCase
             'total_price' => 99.99,
         ]);
 
-        // Job deve completar sem lançar exceção
         (new SendOrderConfirmationEmail($order))->handle();
 
-        // Verificar que o email foi enviado
         Mail::assertSent(OrderConfirmation::class);
     }
 
-    /**
-     * Test que múltiplos emails são enviados para múltiplos pedidos
-     */
-    public function test_multiple_emails_sent_for_multiple_orders(): void
+    #[Test]
+    public function multiple_emails_sent_for_multiple_orders(): void
     {
         Mail::fake();
 
@@ -134,18 +121,14 @@ class SendOrderConfirmationEmailTest extends TestCase
             'total_price' => 149.99,
         ]);
 
-        // Enviar emails
         (new SendOrderConfirmationEmail($order1))->handle();
         (new SendOrderConfirmationEmail($order2))->handle();
 
-        // Verificar que dois emails foram enviados
         Mail::assertSentCount(2);
     }
 
-    /**
-     * Test que o email é enviado para o endereço correto
-     */
-    public function test_email_sent_to_correct_address(): void
+    #[Test]
+    public function email_sent_to_correct_address(): void
     {
         Mail::fake();
 
@@ -164,5 +147,54 @@ class SendOrderConfirmationEmailTest extends TestCase
         Mail::assertSent(OrderConfirmation::class, function ($mail) use ($customUser) {
             return $mail->hasTo($customUser->email);
         });
+    }
+
+    #[Test]
+    public function job_throws_exception_when_order_has_no_user(): void
+    {
+        $order = Order::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        // Forçar user como null no objeto
+        $order->setRelation('user', null);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Usuário ou email não encontrado para o pedido');
+
+        (new SendOrderConfirmationEmail($order))->handle();
+    }
+
+    #[Test]
+    public function job_throws_exception_when_user_has_no_email(): void
+    {
+        $userWithoutEmail = User::factory()->make(['email' => null]);
+        $userWithoutEmail->id = $this->user->id;
+
+        $order = Order::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $order->setRelation('user', $userWithoutEmail);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Usuário ou email não encontrado para o pedido');
+
+        (new SendOrderConfirmationEmail($order))->handle();
+    }
+
+    #[Test]
+    public function job_logs_error_and_rethrows_on_mail_failure(): void
+    {
+        Mail::shouldReceive('to->send')->andThrow(new \Exception('Mail server error'));
+
+        $order = Order::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Mail server error');
+
+        (new SendOrderConfirmationEmail($order))->handle();
     }
 }
