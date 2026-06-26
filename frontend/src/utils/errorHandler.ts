@@ -1,6 +1,7 @@
 export function getErrorMessage(err: unknown, fallback: string): string {
   if (
-    err && typeof err === 'object' &&
+    err &&
+    typeof err === 'object' &&
     'response' in err &&
     err.response &&
     typeof err.response === 'object' &&
@@ -14,4 +15,3 @@ export function getErrorMessage(err: unknown, fallback: string): string {
   }
   return fallback;
 }
- 
