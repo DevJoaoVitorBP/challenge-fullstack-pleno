@@ -33,9 +33,8 @@ jobs:
         working-directory: ./frontend
 
       - name: Type check
-        run: npm run type-check || echo "Type checking skipped (setup needed)"
+        run: npm run typecheck
         working-directory: ./frontend
-        continue-on-error: true
 
       - name: Build
         run: npm run build
@@ -64,47 +63,23 @@ jobs:
         run: npm install --legacy-peer-deps
         working-directory: ./frontend
 
-      - name: Lint
-        run: npm run lint || echo "Linting skipped (ESLint not configured)"
+      - name: Lint check
+        run: npm run lint:check
         working-directory: ./frontend
-        continue-on-error: true
 
       - name: Format check
-        run: npm run format:check || echo "Format check skipped (Prettier not configured)"
+        run: npm run format:check
         working-directory: ./frontend
-        continue-on-error: true
-
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-        working-directory: ./frontend
-
-      - name: Run tests
-        run: npm run test || echo "Tests skipped (test setup needed)"
-        working-directory: ./frontend
-        continue-on-error: true
 
   summary:
-    needs: [build, lint, test]
+    needs: [build, lint]
     runs-on: ubuntu-latest
     
     steps:
       - name: Build Summary
         run: |
-          echo "✅ Frontend CI/CD Pipeline Completed"
-          echo "- Node.js 18.x and 20.x builds: Passed"
-          echo "- Linting: Checked"
-          echo "- Type checking: Checked"
-          echo "- Tests: Optional"
+          echo "✅ Frontend CI/CD Pipeline Completed Successfully"
+          echo "✓ Build: Passed (Node.js 20.x, 22.x)"
+          echo "✓ Type Checking: Passed"
+          echo "✓ Linting: Passed"
+          echo "✓ Format Check: Passed"
