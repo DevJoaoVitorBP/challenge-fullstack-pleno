@@ -3,17 +3,31 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\Paginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
 
 trait ApiResponses
 {
     protected function successResponse($data = null, string $message = 'Success', int $statusCode = 200): JsonResponse
     {
-        $response = [
-            'success' => true,
-        ];
+        $response = ['success' => true, 'message' => $message];
 
-        if ($data instanceof Paginator) {
+        if ($data instanceof ResourceCollection && $data->resource instanceof AbstractPaginator) {
+            $paginator = $data->resource;
+            $response['data'] = $data->response()->getData(true)['data'];
+            $response['meta'] = [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+            ];
+            $response['links'] = [
+                'first' => $paginator->url(1),
+                'last' => $paginator->url($paginator->lastPage()),
+                'prev' => $paginator->previousPageUrl(),
+                'next' => $paginator->nextPageUrl(),
+            ];
+        } elseif ($data instanceof AbstractPaginator) {
             $response['data'] = $data->items();
             $response['meta'] = [
                 'current_page' => $data->currentPage(),

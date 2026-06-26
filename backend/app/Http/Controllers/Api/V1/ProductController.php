@@ -24,7 +24,7 @@ class ProductController extends Controller
 
     public function index(): JsonResponse
     {
-        $filters = request()->only('category_id', 'search', 'min_price', 'max_price', 'sort', 'sort_direction', 'per_page');
+        $filters = request()->only('category_id', 'search', 'min_price', 'max_price', 'sort', 'sort_direction', 'per_page', 'page');
         $products = $this->service->getAllProducts($filters);
 
         return $this->paginatedResponse(
