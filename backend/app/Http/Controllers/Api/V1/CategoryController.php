@@ -58,7 +58,7 @@ class CategoryController extends Controller
             return $this->notFoundResponse('Categoria n�o encontrada');
         }
 
-        $filters = request()->only('search', 'min_price', 'max_price', 'sort', 'sort_direction', 'per_page');
+        $filters = request()->only('search', 'min_price', 'max_price', 'sort', 'sort_direction', 'per_page', 'page');
         $products = $this->productService->getProductsByCategory($id, $filters);
 
         return $this->paginatedResponse(
