@@ -5,8 +5,18 @@ import type { Order, PaginatedResponse } from '@/types';
 import { getErrorMessage } from '@/utils/errorHandler';
 
 export interface CreateOrderData {
-  shipping_address: string;
-  billing_address: string;
+  shipping_address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  billing_address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
   notes?: string;
 }
 
