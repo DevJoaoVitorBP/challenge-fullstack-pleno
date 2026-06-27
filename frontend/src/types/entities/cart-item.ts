@@ -4,6 +4,6 @@ import type { Product } from './product';
 export interface CartItem extends BaseEntity {
   cart_id: number;
   product_id: number;
-  product?: Product;
+  product?: Product | null;
   quantity: number;
 }

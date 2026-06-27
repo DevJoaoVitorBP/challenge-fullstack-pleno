@@ -71,8 +71,41 @@ jobs:
         run: npm run format:check
         working-directory: ./frontend
 
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        working-directory: ./frontend
+
+      - name: Run tests
+        run: npm run test:run
+        working-directory: ./frontend
+
+      - name: Generate coverage report
+        run: npm run test:coverage
+        working-directory: ./frontend
+        continue-on-error: true
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: frontend/coverage/
+        if: always()
+
   summary:
-    needs: [build, lint]
+    needs: [build, lint, test]
     runs-on: ubuntu-latest
     
     steps:
@@ -83,3 +116,5 @@ jobs:
           echo "✓ Type Checking: Passed"
           echo "✓ Linting: Passed"
           echo "✓ Format Check: Passed"
+          echo "✓ Unit Tests: Passed"
+          echo "✓ Coverage Report: Generated"
