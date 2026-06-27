@@ -9,8 +9,18 @@ export interface Order extends BaseEntity {
   tax: number;
   shipping_cost: number;
   total: number;
-  shipping_address: string;
-  billing_address: string;
+  shipping_address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  billing_address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
   notes?: string;
   items?: OrderItem[];
 }
